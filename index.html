@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certification Requirements Builder</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      line-height: 1.5;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+
+    .container {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e8e8e8;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #444;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #4361ee;
+      box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 60px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary { background: #4361ee; color: #fff; }
+    .btn-primary:hover { background: #3a56d4; }
+
+    .btn-success { background: #2ec4b6; color: #fff; }
+    .btn-success:hover { background: #26a69a; }
+
+    .btn-danger { background: #e63946; color: #fff; }
+    .btn-danger:hover { background: #cf3240; }
+
+    .btn-secondary { background: #6c757d; color: #fff; }
+    .btn-secondary:hover { background: #5a6268; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #4361ee;
+      color: #4361ee;
+    }
+    .btn-outline:hover { background: #4361ee; color: #fff; }
+
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
+
+    .requirement-item {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      background: #fafbfc;
+      position: relative;
+    }
+
+    .requirement-item .req-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .requirement-item .req-header h3 {
+      font-size: 0.95rem;
+      color: #1a1a2e;
+    }
+
+    .requirement-item .req-meta {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-green { background: #d1fae5; color: #065f46; }
+    .badge-amber { background: #fef3c7; color: #92400e; }
+    .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+    .tag-input-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      padding: 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      min-height: 38px;
+      cursor: text;
+    }
+
+    .tag-input-wrapper:focus-within {
+      border-color: #4361ee;
+      box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
+    }
+
+    .tag-input-wrapper input {
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      font-size: 0.9rem;
+      padding: 0.15rem 0.35rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    .tag button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6366f1;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .checklist-items .checklist-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .checklist-items .checklist-row input { flex: 1; }
+
+    .preview-pane {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 500px;
+      overflow-y: auto;
+      tab-size: 2;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+
+    .hidden { display: none !important; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+
+    .modal h2 { margin-bottom: 1rem; }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      header { flex-direction: column; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Certification Requirements Builder</h1>
+  <div class="actions">
+    <button class="btn btn-outline" style="border-color:#fff;color:#fff" onclick="loadFromFile()">Load JSON</button>
+    <input type="file" id="fileInput" accept=".json" class="hidden" onchange="handleFileLoad(event)">
+  </div>
+</header>
+
+<div class="container">
+  <!-- Registry Info -->
+  <div class="card">
+    <h2>Registry Information</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="registryName">Registry Name</label>
+        <input type="text" id="registryName" placeholder="e.g. NFPA, NREMT">
+      </div>
+      <div class="form-group">
+        <label for="registryDescription">Description</label>
+        <input type="text" id="registryDescription" placeholder="e.g. National Fire Protection Association Standards">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="lastUpdated">Last Updated</label>
+        <input type="date" id="lastUpdated">
+      </div>
+      <div class="form-group">
+        <label for="source">Source Level</label>
+        <select id="source">
+          <option value="national">National</option>
+          <option value="state">State</option>
+          <option value="local">Local</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="sourceUrl">Source URL</label>
+      <input type="url" id="sourceUrl" placeholder="https://...">
+    </div>
+  </div>
+
+  <!-- Requirements List -->
+  <div class="card">
+    <h2>Requirements</h2>
+    <div id="requirementsList"></div>
+    <div id="emptyState" class="empty-state">
+      No requirements added yet. Click the button below to add one.
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="openRequirementModal()">+ Add Requirement</button>
+    </div>
+  </div>
+
+  <!-- Preview / Export -->
+  <div class="card">
+    <h2>JSON Preview &amp; Export</h2>
+    <div class="preview-pane" id="jsonPreview"></div>
+    <div class="actions">
+      <button class="btn btn-success" onclick="downloadJSON()">Download JSON</button>
+      <button class="btn btn-secondary" onclick="copyJSON()">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Requirement Modal -->
+<div class="modal-backdrop hidden" id="reqModal">
+  <div class="modal">
+    <h2 id="modalTitle">Add Requirement</h2>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="reqName">Requirement Name</label>
+        <input type="text" id="reqName" placeholder="e.g. NFPA 1001 Firefighter I & II Annual Training">
+      </div>
+      <div class="form-group">
+        <label for="reqCode">Registry Code</label>
+        <input type="text" id="reqCode" placeholder="e.g. NFPA 1001">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="reqDescription">Description</label>
+      <textarea id="reqDescription" rows="2" placeholder="Describe this requirement"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="reqType">Requirement Type</label>
+        <select id="reqType" onchange="onRequirementTypeChange()">
+          <option value="hours">Hours</option>
+          <option value="courses">Courses</option>
+          <option value="certification">Certification</option>
+          <option value="checklist">Checklist</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="reqTrainingType">Training Type</label>
+        <select id="reqTrainingType">
+          <option value="continuing_education">Continuing Education</option>
+          <option value="skills_practice">Skills Practice</option>
+          <option value="certification">Certification</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group" id="hoursGroup">
+        <label for="reqHours">Required Hours</label>
+        <input type="number" id="reqHours" min="0" step="0.5" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="reqFrequency">Frequency</label>
+        <select id="reqFrequency">
+          <option value="annual">Annual</option>
+          <option value="biannual">Biannual</option>
+          <option value="one_time">One Time</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group" id="timeLimitGroup">
+      <label for="reqTimeLimit">Time Limit (days) <span style="font-weight:400;color:#888">— optional</span></label>
+      <input type="number" id="reqTimeLimit" min="0" placeholder="e.g. 730">
+    </div>
+
+    <div class="form-group">
+      <label for="reqAppliesToAll">
+        <input type="checkbox" id="reqAppliesToAll" onchange="onAppliesToAllChange()"> Applies to all positions
+      </label>
+    </div>
+
+    <div class="form-group" id="positionsGroup">
+      <label>Required Positions <span style="font-weight:400;color:#888">— press Enter to add</span></label>
+      <div class="tag-input-wrapper" id="positionsTagInput" onclick="this.querySelector('input').focus()">
+        <input type="text" id="positionInput" placeholder="e.g. firefighter" onkeydown="handleTagKey(event)">
+      </div>
+    </div>
+
+    <div class="form-group hidden" id="checklistGroup">
+      <label>Checklist Items</label>
+      <div class="checklist-items" id="checklistItems"></div>
+      <button class="btn btn-outline" type="button" onclick="addChecklistRow()">+ Add Item</button>
+    </div>
+
+    <div class="form-group">
+      <label for="reqEditable">
+        <input type="checkbox" id="reqEditable" checked> Is Editable
+      </label>
+    </div>
+
+    <div class="actions" style="justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeRequirementModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRequirement()">Save Requirement</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let requirements = [];
+  let editIndex = -1;
+  let positionTags = [];
+
+  // Initialize
+  document.getElementById('lastUpdated').value = new Date().toISOString().slice(0, 10);
+  updatePreview();
+
+  // --- Registry helpers ---
+
+  function getRegistryInfo() {
+    return {
+      registry_name: document.getElementById('registryName').value.trim(),
+      registry_description: document.getElementById('registryDescription').value.trim(),
+      last_updated: document.getElementById('lastUpdated').value,
+      source_url: document.getElementById('sourceUrl').value.trim(),
+      source: document.getElementById('source').value
+    };
+  }
+
+  function buildJSON() {
+    const info = getRegistryInfo();
+    return {
+      registry_name: info.registry_name,
+      registry_description: info.registry_description,
+      last_updated: info.last_updated,
+      source_url: info.source_url,
+      source: info.source,
+      requirements: requirements
+    };
+  }
+
+  function updatePreview() {
+    const json = buildJSON();
+    document.getElementById('jsonPreview').textContent = JSON.stringify(json, null, 2);
+  }
+
+  // --- Requirement CRUD ---
+
+  function renderRequirements() {
+    const list = document.getElementById('requirementsList');
+    const empty = document.getElementById('emptyState');
+    list.innerHTML = '';
+
+    if (requirements.length === 0) {
+      empty.classList.remove('hidden');
+      updatePreview();
+      return;
+    }
+
+    empty.classList.add('hidden');
+
+    requirements.forEach((req, i) => {
+      const div = document.createElement('div');
+      div.className = 'requirement-item';
+
+      const typeBadge = {
+        hours: 'badge-blue',
+        courses: 'badge-green',
+        certification: 'badge-purple',
+        checklist: 'badge-amber'
+      }[req.requirement_type] || 'badge-blue';
+
+      let details = '';
+      if (req.required_hours) details += `${req.required_hours} hrs &middot; `;
+      details += req.frequency;
+      if (req.applies_to_all) {
+        details += ' &middot; All positions';
+      } else if (req.required_positions && req.required_positions.length) {
+        details += ' &middot; ' + req.required_positions.join(', ');
+      }
+
+      div.innerHTML = `
+        <div class="req-header">
+          <h3>${escapeHTML(req.name || 'Untitled')}</h3>
+          <div style="display:flex;gap:0.35rem">
+            <button class="btn btn-outline" style="padding:0.25rem 0.6rem;font-size:0.8rem" onclick="editRequirement(${i})">Edit</button>
+            <button class="btn btn-danger" style="padding:0.25rem 0.6rem;font-size:0.8rem" onclick="deleteRequirement(${i})">Remove</button>
+          </div>
+        </div>
+        <div class="req-meta">
+          <span class="badge ${typeBadge}">${req.requirement_type}</span>
+          <span style="color:#666">${details}</span>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+
+    updatePreview();
+  }
+
+  function openRequirementModal(index) {
+    editIndex = typeof index === 'number' ? index : -1;
+    document.getElementById('modalTitle').textContent = editIndex >= 0 ? 'Edit Requirement' : 'Add Requirement';
+
+    // Reset
+    document.getElementById('reqName').value = '';
+    document.getElementById('reqCode').value = '';
+    document.getElementById('reqDescription').value = '';
+    document.getElementById('reqType').value = 'hours';
+    document.getElementById('reqTrainingType').value = 'continuing_education';
+    document.getElementById('reqHours').value = '';
+    document.getElementById('reqFrequency').value = 'annual';
+    document.getElementById('reqTimeLimit').value = '';
+    document.getElementById('reqAppliesToAll').checked = false;
+    document.getElementById('reqEditable').checked = true;
+    positionTags = [];
+    renderPositionTags();
+    document.getElementById('checklistItems').innerHTML = '';
+
+    if (editIndex >= 0) {
+      const r = requirements[editIndex];
+      document.getElementById('reqName').value = r.name || '';
+      document.getElementById('reqCode').value = r.registry_code || '';
+      document.getElementById('reqDescription').value = r.description || '';
+      document.getElementById('reqType').value = r.requirement_type || 'hours';
+      document.getElementById('reqTrainingType').value = r.training_type || 'continuing_education';
+      document.getElementById('reqHours').value = r.required_hours || '';
+      document.getElementById('reqFrequency').value = r.frequency || 'annual';
+      document.getElementById('reqTimeLimit').value = r.time_limit_days || '';
+      document.getElementById('reqAppliesToAll').checked = !!r.applies_to_all;
+      document.getElementById('reqEditable').checked = r.is_editable !== false;
+      positionTags = r.required_positions ? [...r.required_positions] : [];
+      renderPositionTags();
+
+      if (r.checklist_items) {
+        r.checklist_items.forEach(item => addChecklistRow(item));
+      }
+    }
+
+    onRequirementTypeChange();
+    onAppliesToAllChange();
+    document.getElementById('reqModal').classList.remove('hidden');
+    document.getElementById('reqName').focus();
+  }
+
+  function closeRequirementModal() {
+    document.getElementById('reqModal').classList.add('hidden');
+  }
+
+  function saveRequirement() {
+    const req = {};
+    req.name = document.getElementById('reqName').value.trim();
+    req.description = document.getElementById('reqDescription').value.trim();
+    req.registry_code = document.getElementById('reqCode').value.trim();
+    req.requirement_type = document.getElementById('reqType').value;
+    req.training_type = document.getElementById('reqTrainingType').value;
+
+    if (req.requirement_type === 'hours') {
+      const hrs = parseFloat(document.getElementById('reqHours').value);
+      if (!isNaN(hrs) && hrs > 0) req.required_hours = hrs;
+    }
+
+    req.frequency = document.getElementById('reqFrequency').value;
+    req.applies_to_all = document.getElementById('reqAppliesToAll').checked;
+
+    if (!req.applies_to_all && positionTags.length > 0) {
+      req.required_positions = [...positionTags];
+    }
+
+    const timeLimit = parseInt(document.getElementById('reqTimeLimit').value, 10);
+    if (!isNaN(timeLimit) && timeLimit > 0) {
+      req.time_limit_days = timeLimit;
+    }
+
+    if (req.requirement_type === 'checklist') {
+      const items = [];
+      document.querySelectorAll('#checklistItems input').forEach(input => {
+        const v = input.value.trim();
+        if (v) items.push(v);
+      });
+      if (items.length > 0) req.checklist_items = items;
+    }
+
+    req.is_editable = document.getElementById('reqEditable').checked;
+
+    if (!req.name) {
+      alert('Requirement name is required.');
+      return;
+    }
+
+    if (editIndex >= 0) {
+      requirements[editIndex] = req;
+    } else {
+      requirements.push(req);
+    }
+
+    closeRequirementModal();
+    renderRequirements();
+  }
+
+  function editRequirement(index) {
+    openRequirementModal(index);
+  }
+
+  function deleteRequirement(index) {
+    if (confirm('Remove this requirement?')) {
+      requirements.splice(index, 1);
+      renderRequirements();
+    }
+  }
+
+  // --- Conditional form fields ---
+
+  function onRequirementTypeChange() {
+    const type = document.getElementById('reqType').value;
+    document.getElementById('hoursGroup').classList.toggle('hidden', type !== 'hours');
+    document.getElementById('checklistGroup').classList.toggle('hidden', type !== 'checklist');
+  }
+
+  function onAppliesToAllChange() {
+    const all = document.getElementById('reqAppliesToAll').checked;
+    document.getElementById('positionsGroup').classList.toggle('hidden', all);
+  }
+
+  // --- Tag input for positions ---
+
+  function renderPositionTags() {
+    const wrapper = document.getElementById('positionsTagInput');
+    wrapper.querySelectorAll('.tag').forEach(t => t.remove());
+    const input = document.getElementById('positionInput');
+    positionTags.forEach((tag, i) => {
+      const span = document.createElement('span');
+      span.className = 'tag';
+      span.innerHTML = `${escapeHTML(tag)} <button onclick="removeTag(${i})">&times;</button>`;
+      wrapper.insertBefore(span, input);
+    });
+  }
+
+  function handleTagKey(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = e.target.value.trim().toLowerCase();
+      if (val && !positionTags.includes(val)) {
+        positionTags.push(val);
+        renderPositionTags();
+      }
+      e.target.value = '';
+    }
+  }
+
+  function removeTag(i) {
+    positionTags.splice(i, 1);
+    renderPositionTags();
+  }
+
+  // --- Checklist rows ---
+
+  function addChecklistRow(value) {
+    const container = document.getElementById('checklistItems');
+    const row = document.createElement('div');
+    row.className = 'checklist-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(value || '')}" placeholder="Checklist item">
+      <button class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.8rem" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    container.appendChild(row);
+  }
+
+  // --- Export / Import ---
+
+  function downloadJSON() {
+    const data = buildJSON();
+    const name = (data.registry_name || 'requirements').toLowerCase().replace(/\s+/g, '_');
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${name}_requirements.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function copyJSON() {
+    const text = JSON.stringify(buildJSON(), null, 2);
+    navigator.clipboard.writeText(text).then(() => {
+      alert('JSON copied to clipboard.');
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert('JSON copied to clipboard.');
+    });
+  }
+
+  function loadFromFile() {
+    document.getElementById('fileInput').click();
+  }
+
+  function handleFileLoad(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        document.getElementById('registryName').value = data.registry_name || '';
+        document.getElementById('registryDescription').value = data.registry_description || '';
+        document.getElementById('lastUpdated').value = data.last_updated || '';
+        document.getElementById('sourceUrl').value = data.source_url || '';
+        document.getElementById('source').value = data.source || 'national';
+        requirements = Array.isArray(data.requirements) ? data.requirements : [];
+        renderRequirements();
+      } catch (err) {
+        alert('Failed to parse JSON file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  // --- Utilities ---
+
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function escapeAttr(str) {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Live-update preview when registry fields change
+  ['registryName', 'registryDescription', 'lastUpdated', 'sourceUrl', 'source'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updatePreview);
+    document.getElementById(id).addEventListener('change', updatePreview);
+  });
+
+  // Close modal on backdrop click
+  document.getElementById('reqModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRequirementModal();
+  });
+
+  // Close modal on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeRequirementModal();
+  });
+</script>
+
+</body>
+</html>
