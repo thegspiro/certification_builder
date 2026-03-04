@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Build and manage professional certification requirement registries for NFPA, NREMT, and custom standards.">
   <title>Certification Requirements Builder</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -261,6 +262,94 @@
 
     .modal h2 { margin-bottom: 1rem; }
 
+    .header-load-btn {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .req-description {
+      font-size: 0.82rem;
+      color: #555;
+      margin-top: 0.35rem;
+      line-height: 1.4;
+    }
+
+    .req-code {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4361ee;
+      margin-bottom: 0.15rem;
+    }
+
+    .section-count {
+      display: inline-block;
+      background: #4361ee;
+      color: #fff;
+      border-radius: 10px;
+      padding: 0 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .search-bar {
+      margin-bottom: 1rem;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: #4361ee;
+      box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 200;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 0.5rem;
+    }
+
+    .toast {
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      animation: toast-in 0.25s ease-out;
+      cursor: pointer;
+    }
+
+    .toast-success { background: #2ec4b6; }
+    .toast-error { background: #e63946; }
+    .toast-info { background: #4361ee; }
+
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 1.5rem;
+      color: #888;
+      font-size: 0.9rem;
+    }
+
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
       header { flex-direction: column; gap: 0.5rem; }
@@ -272,7 +361,7 @@
 <header>
   <h1>Certification Requirements Builder</h1>
   <div class="actions">
-    <button class="btn btn-outline" style="border-color:#fff;color:#fff" onclick="loadFromFile()">Load JSON File</button>
+    <button class="btn btn-outline header-load-btn" onclick="loadFromFile()">Load JSON File</button>
     <input type="file" id="fileInput" accept=".json" class="hidden" onchange="handleFileLoad(event)">
   </div>
 </header>
@@ -334,10 +423,16 @@
 
   <!-- Requirements List -->
   <div class="card">
-    <h2>Requirements</h2>
+    <h2>Requirements <span class="section-count hidden" id="reqCount">0</span></h2>
+    <div class="search-bar hidden" id="searchBar">
+      <input type="text" id="reqSearch" placeholder="Filter requirements by name, code, or description..." oninput="filterRequirements()">
+    </div>
     <div id="requirementsList"></div>
     <div id="emptyState" class="empty-state">
       No requirements added yet. Click the button below to add one.
+    </div>
+    <div id="noResults" class="no-results hidden">
+      No requirements match your search.
     </div>
     <div class="actions">
       <button class="btn btn-primary" onclick="openRequirementModal()">+ Add Requirement</button>
@@ -356,7 +451,7 @@
 </div>
 
 <!-- Add/Edit Requirement Modal -->
-<div class="modal-backdrop hidden" id="reqModal">
+<div class="modal-backdrop hidden" id="reqModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
     <h2 id="modalTitle">Add Requirement</h2>
 
@@ -448,10 +543,40 @@
   </div>
 </div>
 
+<div class="toast-container" id="toastContainer"></div>
+
 <script>
   let requirements = [];
   let editIndex = -1;
   let positionTags = [];
+  let isDirty = false;
+
+  // --- Toast notifications ---
+
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toast.addEventListener('click', () => toast.remove());
+    container.appendChild(toast);
+    setTimeout(() => {
+      if (toast.parentElement) toast.remove();
+    }, 3000);
+  }
+
+  // --- Unsaved changes warning ---
+
+  window.addEventListener('beforeunload', function(e) {
+    if (isDirty) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  function markDirty() {
+    isDirty = true;
+  }
 
   // --- Embedded registry data ---
   const EMBEDDED_REGISTRIES = {
@@ -534,7 +659,21 @@
   function renderRequirements() {
     const list = document.getElementById('requirementsList');
     const empty = document.getElementById('emptyState');
+    const countBadge = document.getElementById('reqCount');
+    const searchBar = document.getElementById('searchBar');
+    const noResults = document.getElementById('noResults');
     list.innerHTML = '';
+    noResults.classList.add('hidden');
+
+    // Update count badge
+    if (requirements.length > 0) {
+      countBadge.textContent = requirements.length;
+      countBadge.classList.remove('hidden');
+      searchBar.classList.remove('hidden');
+    } else {
+      countBadge.classList.add('hidden');
+      searchBar.classList.add('hidden');
+    }
 
     if (requirements.length === 0) {
       empty.classList.remove('hidden');
@@ -544,7 +683,17 @@
 
     empty.classList.add('hidden');
 
+    const searchTerm = (document.getElementById('reqSearch').value || '').toLowerCase();
+    let visibleCount = 0;
+
     requirements.forEach((req, i) => {
+      // Apply search filter
+      if (searchTerm) {
+        const haystack = [req.name, req.registry_code, req.description].filter(Boolean).join(' ').toLowerCase();
+        if (!haystack.includes(searchTerm)) return;
+      }
+
+      visibleCount++;
       const div = document.createElement('div');
       div.className = 'requirement-item';
 
@@ -564,7 +713,11 @@
         details += ' &middot; ' + req.required_positions.join(', ');
       }
 
+      const codeHtml = req.registry_code ? `<div class="req-code">${escapeHTML(req.registry_code)}</div>` : '';
+      const descHtml = req.description ? `<div class="req-description">${escapeHTML(req.description)}</div>` : '';
+
       div.innerHTML = `
+        ${codeHtml}
         <div class="req-header">
           <h3>${escapeHTML(req.name || 'Untitled')}</h3>
           <div style="display:flex;gap:0.35rem">
@@ -576,11 +729,20 @@
           <span class="badge ${typeBadge}">${req.requirement_type}</span>
           <span style="color:#666">${details}</span>
         </div>
+        ${descHtml}
       `;
       list.appendChild(div);
     });
 
+    if (searchTerm && visibleCount === 0) {
+      noResults.classList.remove('hidden');
+    }
+
     updatePreview();
+  }
+
+  function filterRequirements() {
+    renderRequirements();
   }
 
   function openRequirementModal(index) {
@@ -669,7 +831,8 @@
     req.is_editable = document.getElementById('reqEditable').checked;
 
     if (!req.name) {
-      alert('Requirement name is required.');
+      showToast('Requirement name is required.', 'error');
+      document.getElementById('reqName').focus();
       return;
     }
 
@@ -679,6 +842,7 @@
       requirements.push(req);
     }
 
+    markDirty();
     closeRequirementModal();
     renderRequirements();
   }
@@ -690,6 +854,7 @@
   function deleteRequirement(index) {
     if (confirm('Remove this requirement?')) {
       requirements.splice(index, 1);
+      markDirty();
       renderRequirements();
     }
   }
@@ -767,7 +932,7 @@
   function copyJSON() {
     const text = JSON.stringify(buildJSON(), null, 2);
     navigator.clipboard.writeText(text).then(() => {
-      alert('JSON copied to clipboard.');
+      showToast('JSON copied to clipboard.', 'success');
     }).catch(() => {
       // Fallback
       const ta = document.createElement('textarea');
@@ -776,7 +941,7 @@
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      alert('JSON copied to clipboard.');
+      showToast('JSON copied to clipboard.', 'success');
     });
   }
 
@@ -796,7 +961,7 @@
         document.getElementById('fileSelector').value = '';
         document.getElementById('selectorHint').textContent = 'Loaded from file: ' + file.name;
       } catch (err) {
-        alert('Failed to parse JSON file: ' + err.message);
+        showToast('Failed to parse JSON file: ' + err.message, 'error');
       }
     };
     reader.readAsText(file);
@@ -817,8 +982,8 @@
 
   // Live-update preview when registry fields change
   ['registryName', 'registryDescription', 'lastUpdated', 'sourceUrl', 'source'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updatePreview);
-    document.getElementById(id).addEventListener('change', updatePreview);
+    document.getElementById(id).addEventListener('input', () => { markDirty(); updatePreview(); });
+    document.getElementById(id).addEventListener('change', () => { markDirty(); updatePreview(); });
   });
 
   // Close modal on backdrop click
@@ -826,9 +991,32 @@
     if (e.target === this) closeRequirementModal();
   });
 
-  // Close modal on Escape
+  // Close modal on Escape; trap focus inside modal when open
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeRequirementModal();
+    const modal = document.getElementById('reqModal');
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+      closeRequirementModal();
+      return;
+    }
+
+    // Focus trapping
+    if (e.key === 'Tab' && !modal.classList.contains('hidden')) {
+      const focusable = modal.querySelectorAll('input, select, textarea, button, [tabindex]:not([tabindex="-1"])');
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
   });
 </script>
 
