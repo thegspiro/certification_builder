@@ -120,6 +120,11 @@
     }
     .btn-outline:hover { background: #4361ee; color: #fff; }
 
+    .btn-lg {
+      padding: 0.65rem 1.5rem;
+      font-size: 0.95rem;
+    }
+
     .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
 
     .requirement-item {
@@ -350,9 +355,193 @@
       font-size: 0.9rem;
     }
 
+    /* Stepper */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .stepper-step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #aaa;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .stepper-step:hover { color: #666; }
+
+    .stepper-step .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      color: #888;
+      font-weight: 700;
+      font-size: 0.85rem;
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .stepper-step.active .step-number {
+      background: #4361ee;
+      color: #fff;
+    }
+
+    .stepper-step.completed .step-number {
+      background: #2ec4b6;
+      color: #fff;
+    }
+
+    .stepper-step.active,
+    .stepper-step.completed { color: #1a1a2e; }
+
+    .stepper-connector {
+      flex: 1;
+      height: 2px;
+      background: #e0e0e0;
+      margin: 0 0.75rem;
+      max-width: 80px;
+      transition: background 0.2s;
+    }
+
+    .stepper-connector.completed { background: #2ec4b6; }
+
+    /* Step navigation */
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+
+    .step-nav .step-nav-left,
+    .step-nav .step-nav-right {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    /* Review/Export summary */
+    .review-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .review-section h3 {
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+      color: #1a1a2e;
+    }
+
+    .review-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .review-stat {
+      background: #f8f9fa;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .review-stat .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #4361ee;
+    }
+
+    .review-stat .stat-label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    .review-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9rem;
+    }
+
+    .review-info-row .label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .review-info-row .value {
+      color: #1a1a2e;
+      font-weight: 600;
+      text-align: right;
+      max-width: 60%;
+      word-break: break-word;
+    }
+
+    .validation-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .validation-list li {
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .validation-pass {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .validation-warn {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .validation-fail {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .export-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .export-actions .btn {
+      flex: 1;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
       header { flex-direction: column; gap: 0.5rem; }
+      .stepper-step .step-label { display: none; }
+      .stepper-connector { margin: 0 0.35rem; }
+      .review-grid { grid-template-columns: 1fr; }
+      .export-actions { flex-direction: column; }
     }
   </style>
 </head>
@@ -367,85 +556,180 @@
 </header>
 
 <div class="container">
-  <!-- File Selector -->
-  <div class="card">
-    <h2>Select or Create a Registry</h2>
-    <div class="form-row">
-      <div class="form-group" style="margin-bottom:0">
-        <label for="fileSelector">Registry Template</label>
-        <select id="fileSelector" onchange="onFileSelectorChange()">
-          <option value="">-- Choose an option --</option>
-          <option value="__new__">Create New Registry</option>
-          <optgroup label="Existing Registries">
-            <option value="nfpa">NFPA - National Fire Protection Association</option>
-            <option value="nremt">NREMT - National Registry of EMTs</option>
-          </optgroup>
-        </select>
+  <!-- Stepper Progress Bar -->
+  <ol class="stepper" id="stepper">
+    <li class="stepper-step active" onclick="goToStep(0)">
+      <span class="step-number">1</span>
+      <span class="step-label">Choose Template</span>
+    </li>
+    <span class="stepper-connector"></span>
+    <li class="stepper-step" onclick="goToStep(1)">
+      <span class="step-number">2</span>
+      <span class="step-label">Registry Info</span>
+    </li>
+    <span class="stepper-connector"></span>
+    <li class="stepper-step" onclick="goToStep(2)">
+      <span class="step-number">3</span>
+      <span class="step-label">Requirements</span>
+    </li>
+    <span class="stepper-connector"></span>
+    <li class="stepper-step" onclick="goToStep(3)">
+      <span class="step-number">4</span>
+      <span class="step-label">Review &amp; Export</span>
+    </li>
+  </ol>
+
+  <!-- Step 1: File Selector -->
+  <div class="wizard-step" id="step-0">
+    <div class="card">
+      <h2>Select or Create a Registry</h2>
+      <p style="color:#666;font-size:0.9rem;margin-bottom:1rem">Choose an existing registry template to start editing, or create a new one from scratch.</p>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label for="fileSelector">Registry Template</label>
+          <select id="fileSelector" onchange="onFileSelectorChange()">
+            <option value="">-- Choose an option --</option>
+            <option value="__new__">Create New Registry</option>
+            <optgroup label="Existing Registries">
+              <option value="nfpa">NFPA - National Fire Protection Association</option>
+              <option value="nremt">NREMT - National Registry of EMTs</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;display:flex;align-items:flex-end">
+          <span id="selectorHint" style="font-size:0.8rem;color:#888">Select an existing registry to edit or start fresh.</span>
+        </div>
       </div>
-      <div class="form-group" style="margin-bottom:0;display:flex;align-items:flex-end">
-        <span id="selectorHint" style="font-size:0.8rem;color:#888">Select an existing registry to edit or start fresh.</span>
+      <div class="step-nav">
+        <div class="step-nav-left"></div>
+        <div class="step-nav-right">
+          <button class="btn btn-primary btn-lg" onclick="nextStep()">Next: Registry Info &rarr;</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Registry Info -->
-  <div class="card">
-    <h2>Registry Information</h2>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="registryName">Registry Name</label>
-        <input type="text" id="registryName" placeholder="e.g. NFPA, NREMT">
+  <!-- Step 2: Registry Info -->
+  <div class="wizard-step hidden" id="step-1">
+    <div class="card">
+      <h2>Registry Information</h2>
+      <p style="color:#666;font-size:0.9rem;margin-bottom:1rem">Provide the basic details about this certification registry.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="registryName">Registry Name <span style="color:#e63946">*</span></label>
+          <input type="text" id="registryName" placeholder="e.g. NFPA, NREMT">
+        </div>
+        <div class="form-group">
+          <label for="registryDescription">Description</label>
+          <input type="text" id="registryDescription" placeholder="e.g. National Fire Protection Association Standards">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="lastUpdated">Last Updated</label>
+          <input type="date" id="lastUpdated">
+        </div>
+        <div class="form-group">
+          <label for="source">Source Level</label>
+          <select id="source">
+            <option value="national">National</option>
+            <option value="state">State</option>
+            <option value="local">Local</option>
+          </select>
+        </div>
       </div>
       <div class="form-group">
-        <label for="registryDescription">Description</label>
-        <input type="text" id="registryDescription" placeholder="e.g. National Fire Protection Association Standards">
+        <label for="sourceUrl">Source URL</label>
+        <input type="url" id="sourceUrl" placeholder="https://...">
       </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="lastUpdated">Last Updated</label>
-        <input type="date" id="lastUpdated">
+      <div class="step-nav">
+        <div class="step-nav-left">
+          <button class="btn btn-secondary btn-lg" onclick="prevStep()">&larr; Back</button>
+        </div>
+        <div class="step-nav-right">
+          <button class="btn btn-primary btn-lg" onclick="nextStep()">Next: Requirements &rarr;</button>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="source">Source Level</label>
-        <select id="source">
-          <option value="national">National</option>
-          <option value="state">State</option>
-          <option value="local">Local</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="sourceUrl">Source URL</label>
-      <input type="url" id="sourceUrl" placeholder="https://...">
     </div>
   </div>
 
-  <!-- Requirements List -->
-  <div class="card">
-    <h2>Requirements <span class="section-count hidden" id="reqCount">0</span></h2>
-    <div class="search-bar hidden" id="searchBar">
-      <input type="text" id="reqSearch" placeholder="Filter requirements by name, code, or description..." oninput="filterRequirements()">
-    </div>
-    <div id="requirementsList"></div>
-    <div id="emptyState" class="empty-state">
-      No requirements added yet. Click the button below to add one.
-    </div>
-    <div id="noResults" class="no-results hidden">
-      No requirements match your search.
-    </div>
-    <div class="actions">
-      <button class="btn btn-primary" onclick="openRequirementModal()">+ Add Requirement</button>
+  <!-- Step 3: Requirements List -->
+  <div class="wizard-step hidden" id="step-2">
+    <div class="card">
+      <h2>Requirements <span class="section-count hidden" id="reqCount">0</span></h2>
+      <p style="color:#666;font-size:0.9rem;margin-bottom:1rem">Add the certification and training requirements for this registry.</p>
+      <div class="search-bar hidden" id="searchBar">
+        <input type="text" id="reqSearch" placeholder="Filter requirements by name, code, or description..." oninput="filterRequirements()">
+      </div>
+      <div id="requirementsList"></div>
+      <div id="emptyState" class="empty-state">
+        No requirements added yet. Click the button below to add one.
+      </div>
+      <div id="noResults" class="no-results hidden">
+        No requirements match your search.
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="openRequirementModal()">+ Add Requirement</button>
+      </div>
+      <div class="step-nav">
+        <div class="step-nav-left">
+          <button class="btn btn-secondary btn-lg" onclick="prevStep()">&larr; Back</button>
+        </div>
+        <div class="step-nav-right">
+          <button class="btn btn-primary btn-lg" onclick="nextStep()">Next: Review &amp; Export &rarr;</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Preview / Export -->
-  <div class="card">
-    <h2>JSON Preview &amp; Export</h2>
-    <div class="preview-pane" id="jsonPreview"></div>
-    <div class="actions">
-      <button class="btn btn-success" onclick="downloadJSON()">Download JSON</button>
-      <button class="btn btn-secondary" onclick="copyJSON()">Copy to Clipboard</button>
+  <!-- Step 4: Review & Export -->
+  <div class="wizard-step hidden" id="step-3">
+    <div class="card">
+      <h2>Review &amp; Export</h2>
+      <p style="color:#666;font-size:0.9rem;margin-bottom:1rem">Review your registry before exporting.</p>
+
+      <!-- Validation checks -->
+      <div class="review-section">
+        <h3>Validation</h3>
+        <ul class="validation-list" id="validationList"></ul>
+      </div>
+
+      <!-- Stats -->
+      <div class="review-section">
+        <h3>Summary</h3>
+        <div class="review-grid" id="reviewStats"></div>
+      </div>
+
+      <!-- Registry info summary -->
+      <div class="review-section">
+        <h3>Registry Details</h3>
+        <div id="reviewInfo"></div>
+      </div>
+
+      <!-- Requirements summary -->
+      <div class="review-section">
+        <h3>Requirements</h3>
+        <div id="reviewRequirements"></div>
+      </div>
+
+      <!-- Export actions -->
+      <div class="export-actions">
+        <button class="btn btn-success btn-lg" onclick="downloadJSON()">Download JSON</button>
+        <button class="btn btn-secondary btn-lg" onclick="copyJSON()">Copy to Clipboard</button>
+      </div>
+
+      <!-- JSON Preview (collapsible) -->
+      <details style="margin-top:1.5rem">
+        <summary style="cursor:pointer;font-weight:600;font-size:0.95rem;margin-bottom:0.75rem;color:#444">JSON Preview</summary>
+        <div class="preview-pane" id="jsonPreview"></div>
+      </details>
+
+      <div class="step-nav">
+        <div class="step-nav-left">
+          <button class="btn btn-secondary btn-lg" onclick="prevStep()">&larr; Back to Requirements</button>
+        </div>
+        <div class="step-nav-right"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -550,6 +834,218 @@
   let editIndex = -1;
   let positionTags = [];
   let isDirty = false;
+  let currentStep = 0;
+  const TOTAL_STEPS = 4;
+
+  // --- Wizard stepper navigation ---
+
+  function goToStep(step) {
+    // Allow clicking on completed or current steps, or the next step
+    if (step < 0 || step >= TOTAL_STEPS) return;
+    if (step > currentStep + 1) return; // Can't skip ahead
+
+    // Validate current step before moving forward
+    if (step > currentStep && !validateStep(currentStep)) return;
+
+    currentStep = step;
+    renderStepper();
+    renderSteps();
+
+    // Build review page when entering step 4
+    if (currentStep === 3) {
+      buildReviewPage();
+      updatePreview();
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextStep() {
+    goToStep(currentStep + 1);
+  }
+
+  function prevStep() {
+    if (currentStep > 0) {
+      currentStep--;
+      renderStepper();
+      renderSteps();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function validateStep(step) {
+    if (step === 0) {
+      // Step 1: template selection — always valid (user can skip)
+      return true;
+    }
+    if (step === 1) {
+      // Step 2: registry info — name is required
+      const name = document.getElementById('registryName').value.trim();
+      if (!name) {
+        showToast('Please enter a registry name before continuing.', 'error');
+        document.getElementById('registryName').focus();
+        return false;
+      }
+      return true;
+    }
+    if (step === 2) {
+      // Step 3: requirements — warn but allow if empty
+      if (requirements.length === 0) {
+        return confirm('You have no requirements yet. Continue to review anyway?');
+      }
+      return true;
+    }
+    return true;
+  }
+
+  function renderStepper() {
+    const steps = document.querySelectorAll('.stepper-step');
+    const connectors = document.querySelectorAll('.stepper-connector');
+
+    steps.forEach((el, i) => {
+      el.classList.remove('active', 'completed');
+      if (i === currentStep) {
+        el.classList.add('active');
+      } else if (i < currentStep) {
+        el.classList.add('completed');
+        el.querySelector('.step-number').textContent = '\u2713';
+      }
+      if (i > currentStep) {
+        el.querySelector('.step-number').textContent = i + 1;
+      }
+      if (i === currentStep) {
+        el.querySelector('.step-number').textContent = i + 1;
+      }
+    });
+
+    connectors.forEach((el, i) => {
+      el.classList.toggle('completed', i < currentStep);
+    });
+  }
+
+  function renderSteps() {
+    document.querySelectorAll('.wizard-step').forEach((el, i) => {
+      el.classList.toggle('hidden', i !== currentStep);
+    });
+  }
+
+  // --- Review page builder ---
+
+  function buildReviewPage() {
+    const info = getRegistryInfo();
+
+    // Validation checks
+    const checks = [];
+    if (info.registry_name) {
+      checks.push({ pass: true, msg: 'Registry name is set' });
+    } else {
+      checks.push({ pass: false, msg: 'Registry name is missing' });
+    }
+
+    if (info.registry_description) {
+      checks.push({ pass: true, msg: 'Description is provided' });
+    } else {
+      checks.push({ warn: true, msg: 'No description provided (optional)' });
+    }
+
+    if (requirements.length > 0) {
+      checks.push({ pass: true, msg: requirements.length + ' requirement(s) defined' });
+    } else {
+      checks.push({ pass: false, msg: 'No requirements added' });
+    }
+
+    if (info.source_url) {
+      checks.push({ pass: true, msg: 'Source URL is provided' });
+    } else {
+      checks.push({ warn: true, msg: 'No source URL (optional)' });
+    }
+
+    // Check for requirements without positions
+    const noPositions = requirements.filter(r => !r.applies_to_all && (!r.required_positions || r.required_positions.length === 0));
+    if (noPositions.length > 0) {
+      checks.push({ warn: true, msg: noPositions.length + ' requirement(s) have no positions assigned' });
+    }
+
+    const validationList = document.getElementById('validationList');
+    validationList.innerHTML = checks.map(c => {
+      const cls = c.pass ? 'validation-pass' : (c.warn ? 'validation-warn' : 'validation-fail');
+      const icon = c.pass ? '\u2713' : (c.warn ? '\u26A0' : '\u2717');
+      return `<li class="${cls}">${icon} ${escapeHTML(c.msg)}</li>`;
+    }).join('');
+
+    // Stats
+    const totalHours = requirements.reduce((sum, r) => sum + (r.required_hours || 0), 0);
+    const types = {};
+    requirements.forEach(r => { types[r.requirement_type] = (types[r.requirement_type] || 0) + 1; });
+    const positions = new Set();
+    requirements.forEach(r => {
+      if (r.required_positions) r.required_positions.forEach(p => positions.add(p));
+    });
+
+    document.getElementById('reviewStats').innerHTML = `
+      <div class="review-stat">
+        <div class="stat-value">${requirements.length}</div>
+        <div class="stat-label">Requirements</div>
+      </div>
+      <div class="review-stat">
+        <div class="stat-value">${totalHours}</div>
+        <div class="stat-label">Total Hours</div>
+      </div>
+      <div class="review-stat">
+        <div class="stat-value">${Object.keys(types).length}</div>
+        <div class="stat-label">Requirement Types</div>
+      </div>
+      <div class="review-stat">
+        <div class="stat-value">${positions.size}</div>
+        <div class="stat-label">Unique Positions</div>
+      </div>
+    `;
+
+    // Registry info
+    document.getElementById('reviewInfo').innerHTML = `
+      <div class="review-info-row"><span class="label">Name</span><span class="value">${escapeHTML(info.registry_name || '—')}</span></div>
+      <div class="review-info-row"><span class="label">Description</span><span class="value">${escapeHTML(info.registry_description || '—')}</span></div>
+      <div class="review-info-row"><span class="label">Last Updated</span><span class="value">${escapeHTML(info.last_updated || '—')}</span></div>
+      <div class="review-info-row"><span class="label">Source Level</span><span class="value">${escapeHTML(info.source || '—')}</span></div>
+      <div class="review-info-row"><span class="label">Source URL</span><span class="value">${escapeHTML(info.source_url || '—')}</span></div>
+    `;
+
+    // Requirements summary
+    const reqContainer = document.getElementById('reviewRequirements');
+    if (requirements.length === 0) {
+      reqContainer.innerHTML = '<div class="empty-state">No requirements to display.</div>';
+    } else {
+      reqContainer.innerHTML = requirements.map((req, i) => {
+        const typeBadge = {
+          hours: 'badge-blue', courses: 'badge-green',
+          certification: 'badge-purple', checklist: 'badge-amber'
+        }[req.requirement_type] || 'badge-blue';
+
+        let details = '';
+        if (req.required_hours) details += req.required_hours + ' hrs &middot; ';
+        details += req.frequency;
+        if (req.applies_to_all) {
+          details += ' &middot; All positions';
+        } else if (req.required_positions && req.required_positions.length) {
+          details += ' &middot; ' + req.required_positions.join(', ');
+        }
+
+        return `
+          <div class="requirement-item">
+            ${req.registry_code ? `<div class="req-code">${escapeHTML(req.registry_code)}</div>` : ''}
+            <div class="req-header">
+              <h3>${escapeHTML(req.name || 'Untitled')}</h3>
+            </div>
+            <div class="req-meta">
+              <span class="badge ${typeBadge}">${req.requirement_type}</span>
+              <span style="color:#666">${details}</span>
+            </div>
+            ${req.description ? `<div class="req-description">${escapeHTML(req.description)}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+  }
 
   // --- Toast notifications ---
 
@@ -927,6 +1423,7 @@
     a.download = `${name}_requirements.json`;
     a.click();
     URL.revokeObjectURL(a.href);
+    showToast('JSON file downloaded!', 'success');
   }
 
   function copyJSON() {
@@ -960,6 +1457,9 @@
         // Reset dropdown since this is a custom loaded file
         document.getElementById('fileSelector').value = '';
         document.getElementById('selectorHint').textContent = 'Loaded from file: ' + file.name;
+        // Jump to step 2 (registry info) so user can review
+        goToStep(1);
+        showToast('Registry loaded from file. Review the details below.', 'success');
       } catch (err) {
         showToast('Failed to parse JSON file: ' + err.message, 'error');
       }
