@@ -222,6 +222,35 @@
 
     .checklist-items .checklist-row input { flex: 1; }
 
+    .training-areas .area-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+      align-items: center;
+    }
+
+    .training-areas .area-row input[type="text"] { flex: 2; }
+    .training-areas .area-row input[type="number"] { flex: 0 0 90px; }
+
+    .area-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin-top: 0.35rem;
+    }
+
+    .area-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: #ede9fe;
+      color: #5b21b6;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
     .preview-pane {
       background: #1e1e2e;
       color: #cdd6f4;
@@ -793,6 +822,12 @@
       </div>
     </div>
 
+    <div class="form-group hidden" id="trainingAreasGroup">
+      <label>Training Areas <span style="font-weight:400;color:#888">— specify hours by subject area (optional)</span></label>
+      <div class="training-areas" id="trainingAreas"></div>
+      <button class="btn btn-outline" type="button" onclick="addTrainingAreaRow()" style="margin-top:0.35rem">+ Add Area</button>
+    </div>
+
     <div class="form-group" id="timeLimitGroup">
       <label for="reqTimeLimit">Time Limit (days) <span style="font-weight:400;color:#888">— optional</span></label>
       <input type="number" id="reqTimeLimit" min="0" placeholder="e.g. 730">
@@ -1044,6 +1079,7 @@
               <span style="color:#666">${details}</span>
             </div>
             ${req.description ? `<div class="req-description">${escapeHTML(req.description)}</div>` : ''}
+            ${req.training_areas && req.training_areas.length ? `<div class="area-pills">${req.training_areas.map(a => `<span class="area-pill">${escapeHTML(a.area)}: ${a.hours} hrs</span>`).join('')}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -1214,6 +1250,9 @@
 
       const codeHtml = req.registry_code ? `<div class="req-code">${escapeHTML(req.registry_code)}</div>` : '';
       const descHtml = req.description ? `<div class="req-description">${escapeHTML(req.description)}</div>` : '';
+      const areasHtml = req.training_areas && req.training_areas.length
+        ? `<div class="area-pills">${req.training_areas.map(a => `<span class="area-pill">${escapeHTML(a.area)}: ${a.hours} hrs</span>`).join('')}</div>`
+        : '';
 
       div.innerHTML = `
         ${codeHtml}
@@ -1229,6 +1268,7 @@
           <span style="color:#666">${details}</span>
         </div>
         ${descHtml}
+        ${areasHtml}
       `;
       list.appendChild(div);
     });
@@ -1262,6 +1302,7 @@
     positionTags = [];
     renderPositionTags();
     document.getElementById('checklistItems').innerHTML = '';
+    document.getElementById('trainingAreas').innerHTML = '';
 
     if (editIndex >= 0) {
       const r = requirements[editIndex];
@@ -1277,6 +1318,10 @@
       document.getElementById('reqEditable').checked = r.is_editable !== false;
       positionTags = r.required_positions ? [...r.required_positions] : [];
       renderPositionTags();
+
+      if (r.training_areas) {
+        r.training_areas.forEach(a => addTrainingAreaRow(a.area, a.hours));
+      }
 
       if (r.checklist_items) {
         r.checklist_items.forEach(item => addChecklistRow(item));
@@ -1304,6 +1349,17 @@
     if (req.requirement_type === 'hours') {
       const hrs = parseFloat(document.getElementById('reqHours').value);
       if (!isNaN(hrs) && hrs > 0) req.required_hours = hrs;
+
+      const areas = [];
+      document.querySelectorAll('#trainingAreas .area-row').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const areaName = inputs[0].value.trim();
+        const areaHours = parseFloat(inputs[1].value);
+        if (areaName && !isNaN(areaHours) && areaHours > 0) {
+          areas.push({ area: areaName, hours: areaHours });
+        }
+      });
+      if (areas.length > 0) req.training_areas = areas;
     }
 
     req.frequency = document.getElementById('reqFrequency').value;
@@ -1363,6 +1419,7 @@
   function onRequirementTypeChange() {
     const type = document.getElementById('reqType').value;
     document.getElementById('hoursGroup').classList.toggle('hidden', type !== 'hours');
+    document.getElementById('trainingAreasGroup').classList.toggle('hidden', type !== 'hours');
     document.getElementById('checklistGroup').classList.toggle('hidden', type !== 'checklist');
   }
 
@@ -1400,6 +1457,20 @@
   function removeTag(i) {
     positionTags.splice(i, 1);
     renderPositionTags();
+  }
+
+  // --- Training area rows ---
+
+  function addTrainingAreaRow(area, hours) {
+    const container = document.getElementById('trainingAreas');
+    const row = document.createElement('div');
+    row.className = 'area-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(area || '')}" placeholder="e.g. Trauma, Cardiac, Pediatrics">
+      <input type="number" value="${hours || ''}" min="0" step="0.5" placeholder="Hrs">
+      <button class="btn btn-danger" style="padding:0.25rem 0.5rem;font-size:0.8rem" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    container.appendChild(row);
   }
 
   // --- Checklist rows ---
